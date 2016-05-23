@@ -5,6 +5,7 @@ module.exports = {
 	
 	//routes within an object resolves to a folder with that name - can nest objets / folders endlessly
 	users: {
-		getById: "GET /users/:id"
+		getById: "GET /users/:id",
+		getName: "GET /users/name/:name"
 	}
 }
