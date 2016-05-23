@@ -2,9 +2,10 @@ var express = require('express');
 var router = express.Router();
 var fs = require('fs');
 var path = require('path');
-var globals = require(__dirname + "/../config/globals");
+var globalsHandler = require(__dirname + "/../config/globals");
 
 module.exports = function(routesObj, routeDir){
+	console.log("INITIALIZING ROUTES")
 	return registerRoutes(routesObj, routeDir, router)
 }
 
@@ -13,11 +14,12 @@ var registerRoutes = function(obj, routeDir){
 		if(typeof obj[key] === "string"){
 			
 			var routeHandler = findRouteHandler(key, routeDir);
+			console.log(obj[key])
 			var input = obj[key].split(" ");
 			var method = input[0].toLowerCase();
 			var path = input[1].toLowerCase();
 
-			router[method](path, routeHandler.bind(globals));
+			router[method](path, routeHandler.bind(globalsHandler.get()));
 
 		} else if(typeof obj[key] === "object"){
 
