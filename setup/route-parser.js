@@ -35,10 +35,13 @@ var findRouteHandler = function(key, routeDir){
 	var fileNames = fs.readdirSync(routeDir);
 	var routeHandler = null;
 	for(var i in fileNames){
-		var routes = require(routeDir + "/" + fileNames[i]);
-		if(key in routes){
-			routeHandler = routes[key];
-			break;
+		stats = fs.statSync(routeDir + "/" + fileNames[i]);
+		if (stats.isFile()){
+			var routes = require(routeDir + "/" + fileNames[i]);
+			if(key in routes){
+				routeHandler = routes[key];
+				break;
+			}
 		}
 	}
 	if(!routeHandler){
