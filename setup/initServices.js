@@ -4,10 +4,10 @@ var serviceDir = path.normalize(__dirname + "/../api/services");
 var serviceFiles = fs.readdirSync(serviceDir);
 var globalsHandler = require(path.normalize(__dirname + "/../config/globals"));
 
-var globals = globalsHandler.get();
 
 
 function init(){
+	var globals = globalsHandler.get();
 	console.log("INITIALIZING SERVICES")
 	var services = {}
 	for(var i in serviceFiles){
