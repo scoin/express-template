@@ -5,12 +5,17 @@
  */
 
 var path = require("path");
+var EventEmitter = require('events');
+
 var globalsHandler = require(path.normalize(__dirname + "/../config/globals.js"));
 var globalInit = require(path.normalize(__dirname + "/../config/globalInit.js"));
 var initServices = require(path.normalize(__dirname + "/../setup/initServices.js"));
 
+//------------------------------------------------
 console.log("STARTING UP")
 console.log("INITIALIZING GLOBALS")
+//------------------------------------------------
+
 globalInit(function(initializedGlobals){
     if(!initializedGlobals){
         initializedGlobals = {};
@@ -19,9 +24,11 @@ globalInit(function(initializedGlobals){
         throw "Initialized Globals must be a plain object."
     }
 
+//------------------------------------------------
     for(var key in initializedGlobals){
         console.log(key)
     }
+//------------------------------------------------
 
     globalsHandler.set(initializedGlobals);
 
@@ -33,6 +40,8 @@ globalInit(function(initializedGlobals){
     var debug = require('debug')('express-template:server');
     var http = require('http');
     var startup = require(path.normalize(__dirname + "/../config/startup")).bind(globals);
+    var afterStart = require(path.normalize(__dirname + "/../config/afterStart")).bind(globals);
+    var shutdown = require(path.normalize(__dirname + "/../config/shutdown")).bind(globals);
 
     /**
     * Get port from environment and store in Express.
@@ -55,9 +64,10 @@ globalInit(function(initializedGlobals){
         if(err){
           throw err;
         }
-        server.listen(port);
-        server.on('error', onError);
-        server.on('listening', onListening.bind({}, server));
+        startServer(server, port, {
+            afterStart: afterStart,
+            shutdown: shutdown
+        });
     })
 })
 
@@ -77,34 +87,70 @@ function normalizePort(val) {
     return false;
 }
 
-function onError(error) {
-    if (error.syscall !== 'listen') {
-      throw error;
+function startServer(server, port, callbacks){
+    var serverStatus = new EventEmitter();
+
+    serverStatus.on("start", function(){
+
+        server.listen(port);
+        server.on('error', onError);
+        server.on('listening', onListening);
+
+    })
+
+    serverStatus.on("started", function(bind){
+
+        onClose(callbacks.shutdown)
+
+        callbacks.afterStart(server.address(), bind)
+    })
+
+    function onError(error) {
+
+        if (error.syscall !== 'listen') {
+          throw error;
+        }
+
+        // handle specific listen errors with friendly messages
+        switch (error.code) {
+          case 'EACCES':
+            console.error("PORT" + ' requires elevated privileges');
+            process.exit(1);
+            break;
+          case 'EADDRINUSE':
+            console.error("Port " + port + ' is already in use');
+            port += 1;
+            server.removeListener("error", onError);
+            server.removeListener("listening", onListening);
+            serverStatus.emit("start");
+            break;
+          default:
+            throw error;
+        }
     }
 
-    var bind = typeof port === 'string'
-      ? 'Pipe ' + port
-      : 'Port ' + port;
-
-    // handle specific listen errors with friendly messages
-    switch (error.code) {
-      case 'EACCES':
-        console.error(bind + ' requires elevated privileges');
-        process.exit(1);
-        break;
-      case 'EADDRINUSE':
-        console.error(bind + ' is already in use');
-        process.exit(1);
-        break;
-      default:
-        throw error;
+    function onListening() {
+        var addr = server.address();
+        var bind = typeof addr === 'string'
+          ? 'pipe ' + addr
+          : 'port ' + addr.port;
+        console.log('Listening on ' + bind);
+        serverStatus.emit("started", bind);
     }
-}
 
-function onListening(server) {
-    var addr = server.address();
-    var bind = typeof addr === 'string'
-      ? 'pipe ' + addr
-      : 'port ' + addr.port;
-    console.log('Listening on ' + bind);
+    function onClose(cb){
+
+        process.on("exit", function(){
+            cb()
+        })
+        process.on("SIGTERM", function(){
+            process.exit(1);
+        })
+        process.on("SIGINT", function(){
+            process.exit(1);
+        })
+        
+    }
+
+    serverStatus.emit("start");
 }
