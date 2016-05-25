@@ -68,6 +68,7 @@ globalInit(function(initializedGlobals){
         if(err){
           throw err;
         }
+        console.log(globals)
         startServer(server, port, hostname, {
             afterStart: afterStart,
             shutdown: shutdown

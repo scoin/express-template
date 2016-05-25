@@ -2,4 +2,5 @@
 
 module.exports = function(){
 	console.log("\n SHUTTING DOWN")
+	this.dnb.discovery.remove()
 }

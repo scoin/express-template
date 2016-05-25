@@ -6,7 +6,9 @@ var _ = require("lodash");
 var globals = {
 	async: require('async'),
 	"_": require("lodash"),
-	errors: require(__dirname + "/../api/responses/error")
+	errors: require(__dirname + "/../api/responses/error"),
+	name: "crud-service",
+	dnb: require("dnb-common")
 }
 
 module.exports = {
