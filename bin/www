@@ -7,14 +7,25 @@
 var path = require("path");
 var EventEmitter = require('events');
 
+//------------------------------------------------
+console.log("STARTING UP")
+console.log("INITIALIZING CONFIG VARS")
+//------------------------------------------------
+var envConfig = require(path.normalize(__dirname + "/../config/env.js"));
+var nconf = require("nconf");
+
+if(process.env.NODE_ENV in envConfig){
+    nconf.defaults(envConfig[process.env.NODE_ENV]);
+} else {
+    nconf.defaults(envConfig.development);
+}
+
+//------------------------------------------------
+console.log("INITIALIZING GLOBALS")
+//------------------------------------------------
 var globalsHandler = require(path.normalize(__dirname + "/../config/globals.js"));
 var globalInit = require(path.normalize(__dirname + "/../config/globalInit.js"));
 var initServices = require(path.normalize(__dirname + "/../setup/initServices.js"));
-
-//------------------------------------------------
-console.log("STARTING UP")
-console.log("INITIALIZING GLOBALS")
-//------------------------------------------------
 
 globalInit(function(initializedGlobals){
     if(!initializedGlobals){
