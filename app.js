@@ -6,6 +6,8 @@ var path = require('path');
 var routeParser = require('./setup/route-parser');
 var routes = require('./config/routes');
 
+var initResponses = require(__dirname + "/config/response");
+
 var app = express();
 
 app.use(logger('dev'));
@@ -13,9 +15,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 //stuff to do before every route
-// app.use(function(req, res, next){
-//   next()
-// })
+app.use(function(req, res, next){
+  initResponses(req, res);
+  next()
+})
 
 app.use('/', routeParser(routes, path.normalize(__dirname + "/api/routes")));
 
