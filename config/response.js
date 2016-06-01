@@ -1,4 +1,5 @@
 var analytics = require('dnb-common').analytics;
+var nconf = require("nconf");
 
 function errorHandler(req, res, err, message){
 	console.error(err);
@@ -9,14 +10,14 @@ function errorHandler(req, res, err, message){
 		statusCode: this.statusCode
 	};
 	res.status(this.statusCode).json(data);
-	if(process.env.LOG_REQUESTS){
+	if(nconf.get("LOG_REQUESTS")){
 		analytics.log(req, data);
 	}
 }
 
 function successHandler(req, res, data){
 	res.status(this.statusCode).json(data);
-	if(process.env.LOG_REQUESTS){
+	if(nconf.get("LOG_REQUESTS")){
 		analytics.log(req, data);
 	}
 }
