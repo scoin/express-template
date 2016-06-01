@@ -1,13 +1,15 @@
 var _ = require("lodash");
+var nconf = require("nconf");
 
 //put static global libraries in here and they will be scoped to this in every route. 
 //If your globals require a value retrieved asynchronously, put them inside globalInit.js
 
 var globals = {
+	name: "crud-service",
 	async: require('async'),
 	"_": require("lodash"),
-	name: "crud-service",
-	dnb: require("dnb-common")
+	dnb: require("dnb-common"),
+	discovery: require("dnb-common").discovery.init(nconf.get('REDIS'))
 }
 
 module.exports = {
