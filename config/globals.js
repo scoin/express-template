@@ -5,7 +5,7 @@ var nconf = require("nconf");
 //If your globals require a value retrieved asynchronously, put them inside globalInit.js
 
 var globals = {
-	name: "crud-service",
+	name: "blank-template",
 	async: require('async'),
 	"_": require("lodash"),
 	dnb: require("dnb-common"),
