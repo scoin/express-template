@@ -16,9 +16,19 @@ function errorHandler(req, res, err, message){
 }
 
 function successHandler(req, res, data){
-	res.status(this.statusCode).json(data);
+	var resp = {};
+	if(typeof data === "object" && !(data instanceof Array)){
+		resp = data;
+	}
+	else if(data instanceof Array){
+		resp.data = data;
+		resp.count = data.length;
+	} else {
+		resp.data = data;
+	}
+	res.status(this.statusCode).json(resp);
 	if(nconf.get("LOG_REQUESTS")){
-		analytics.log(req, data);
+		analytics.log(req, resp);
 	}
 }
 
