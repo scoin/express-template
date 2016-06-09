@@ -8,7 +8,7 @@ function errorHandler(req, res, err, message){
 	var data = {
 		responseText: this.error,
 		error: _.get(err, "body", {}),
-		message: message || err.message,
+		message: message || _.get(err, "message", null) || _.get(err, "body.message", null),
 		statusCode: this.statusCode
 	};
 	res.status(this.statusCode).json(data);
@@ -25,6 +25,10 @@ function negotiate(req, res, err, message, defaultStatus){
 	status = _.get(err, "statusCode", defaultStatus).toString();
 	//search for more statuses and make smart decisions
 
+	//if an internal service gives a 400 that's a 500 facing outward, bad requests should be stopped at crud service
+	//if the crud service gives a 400 that's a 400
+	//pretty much all others bubble up
+
 	if(statusCodeMap[status]){
 		return statusCodeMap[status](req, res, err, message);
 	}
@@ -33,6 +37,9 @@ function negotiate(req, res, err, message, defaultStatus){
 
 function successHandler(req, res, data){
 	var resp = {};
+	if(data.body){
+		data = data.body;
+	}
 	if(typeof data === "object" && !(data instanceof Array)){
 		resp = data;
 	}
@@ -42,7 +49,7 @@ function successHandler(req, res, data){
 	} else {
 		resp.data = data;
 	}
-	res.status(this.statusCode).json(resp.body);
+	res.status(this.statusCode).json(resp);
 	if(nconf.get("LOG_REQUESTS")){
 		analytics.log(req, resp);
 	}
